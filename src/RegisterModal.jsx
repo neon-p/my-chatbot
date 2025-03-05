@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './RegisterModal.css';
+import { db } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 function RegisterModal({ isOpen, onClose }) {
   const [name, setName] = useState('');
@@ -7,11 +9,22 @@ function RegisterModal({ isOpen, onClose }) {
   const [phone, setPhone] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    alert(`Name: ${name}, Age: ${age}, Phone: ${phone}, Emergency Contact: ${emergencyContact}`);
-    onClose();
+    const formData = { name, age, phone, emergencyContact };
+
+    console.log('Form submitted:', formData);
+
+    try {
+      const docRef = await addDoc(collection(db, 'registrations'), formData);
+      console.log('Document written with ID: ', docRef.id);
+      alert('Registration successful');
+      onClose();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error adding document: ', error);
+      alert('Registration failed');
+    }
   };
 
   if (!isOpen) return null;
@@ -21,22 +34,42 @@ function RegisterModal({ isOpen, onClose }) {
       <div className="modal-content">
         <h2>Register</h2>
         <form onSubmit={handleSubmit}>
-          <label>
-            Name:
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-          </label>
-          <label>
-            Age:
-            <input type="number" value={age} onChange={(e) => setAge(e.target.value)} required />
-          </label>
-          <label>
-            Phone Number:
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-          </label>
-          <label>
-            Emergency Contact:
-            <input type="tel" value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} required />
-          </label>
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <label htmlFor="age">Age:</label>
+          <input
+            type="number"
+            id="age"
+            name="age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            required
+          />
+          <label htmlFor="phone">Phone Number:</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+          <label htmlFor="emergencyContact">Emergency Contact:</label>
+          <input
+            type="tel"
+            id="emergencyContact"
+            name="emergencyContact"
+            value={emergencyContact}
+            onChange={(e) => setEmergencyContact(e.target.value)}
+            required
+          />
           <button type="submit">Submit</button>
           <button type="button" onClick={onClose}>Close</button>
         </form>
